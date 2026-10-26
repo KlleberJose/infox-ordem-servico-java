@@ -7,9 +7,13 @@ package br.com.infox.telas;
 import java.sql.*;
 import br.com.infox.dal.ModuloConexao;
 import java.awt.HeadlessException;
+import java.util.HashMap;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import net.proteanit.sql.DbUtils;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.view.JasperViewer;
 
 /**
  *
@@ -83,6 +87,8 @@ public class TelaOS extends javax.swing.JInternalFrame {
                 int adicionado = pst.executeUpdate();
                 if (adicionado > 0) {
                     JOptionPane.showMessageDialog(null, "OS emitida com sucesso.");
+
+                    recuperarOs();
 
                     btnOsCreate.setEnabled(false);
                     btnOsRead.setEnabled(false);
@@ -214,6 +220,40 @@ public class TelaOS extends javax.swing.JInternalFrame {
             } catch (Exception e) {
             }
 
+        }
+    }
+
+    private void imprimirOs() {
+
+        int confirma = JOptionPane.showConfirmDialog(null, "Confirma a impressão desta OS?", "Atenção", JOptionPane.YES_NO_OPTION);
+
+        if (confirma == JOptionPane.YES_OPTION) {
+
+            try {
+                HashMap filtro = new HashMap();
+                filtro.put("os", Integer.parseInt(txtOs.getText()));
+
+                JasperPrint print = JasperFillManager.fillReport("C:/Reports/os.jasper", filtro, conexao);
+
+                JasperViewer.viewReport(print, false);
+
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Erro: " + e);
+            }
+        }
+    }
+
+    private void recuperarOs() {
+        String sql = "select max(os) from tbos";
+        try {
+            pst = conexao.prepareStatement(sql);
+            rs = pst.executeQuery();
+
+            if (rs.next()) {
+                txtOs.setText(rs.getString(1));
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Erro: " + e);
         }
     }
 
@@ -476,6 +516,7 @@ public class TelaOS extends javax.swing.JInternalFrame {
         btnOsPrint.setToolTipText("Imprimir Os");
         btnOsPrint.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnOsPrint.setEnabled(false);
+        btnOsPrint.addActionListener(this::btnOsPrintActionPerformed);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -610,6 +651,10 @@ public class TelaOS extends javax.swing.JInternalFrame {
     private void btnOsDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOsDeleteActionPerformed
         excluirOs();
     }//GEN-LAST:event_btnOsDeleteActionPerformed
+
+    private void btnOsPrintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOsPrintActionPerformed
+        imprimirOs();
+    }//GEN-LAST:event_btnOsPrintActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
